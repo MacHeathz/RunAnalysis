@@ -1,13 +1,35 @@
 library(dplyr)
 
-# You should create one R script called run_analysis.R that does the following:
-# 1. Merges the training and the test sets to create one data set.
-# 2. Extracts only the measurements on the mean and standard deviation for each
-#    measurement.
-# 3. Uses descriptive activity names to name the activities in the data set.
-# 4. Appropriately labels the data set with descriptive variable names.
-# 5. From the data set in step 4, creates a second, independent tidy data set with
-#    the average of each variable for each activity and each subject.
+####################################################################################
+## Here's my take on the RunAnalysis Peer Assignment for the Getting and Cleaning ##
+## Data course on Coursera.                                                       ##
+##                                                                                ##
+## The assignment gave five steps in which to process the data. I tried them, but ##
+## thought they could be made simpler and quicker by using a different order. So  ##
+## I do all the steps, just not in the order that the assignment specified.       ##
+##                                                                                ##
+## What's important to know, is that I tried not to repeat myself in the code,    ##
+## following the Don't Repeat Yourself (DRY) principle. For that, I created some  ##
+## functions in which I placed code that was called repeatedly, like the          ##
+## load_data_subset and load_file functions.                                      ##
+##                                                                                ##
+## I also created the download_if_needed and load_data functions to make the main ##
+## run_analysis function shorter and more readable. All functions are explained   ##
+## in the comments.                                                               ##
+##                                                                                ##
+## To run this script, source it and type run_analysis().                         ##
+## It loads the dplyr library. If you don't have it, install it using             ##
+## install.packages(dplyr). It also loads the downloader package to download      ##
+## data files if they are not present. Install this package with                  ##
+## install.packages(downloader).                                                  ##
+##                                                                                ##
+## The output is written to 'tidy_run_analysis.txt' in the current working        ##
+## directory.                                                                     ##
+##                                                                                ##
+## For more info, see the comments or the README.md and CodeBook.md files.        ##
+##                                                                                ##
+## Cheers, Florian                                                                ##
+####################################################################################
 
 # Download and unzip data if needed. Checks whether the supplied dir and
 # exist. If not, it attempts to download the zipfile from the
@@ -38,7 +60,7 @@ download_if_needed <- function(dir, url, zip) {
 # 
 # (string) filename: a string with the path to the file that should be read.
 # 
-# Returns a dataframe, wrapped in a dplyr table using dplyr::as.tbl()
+# Returns A dataframe, wrapped in a dplyr table using dplyr::as.tbl()
 #
 load_file <- function(filename) {
   #print(paste("loading", filename))
@@ -53,7 +75,7 @@ load_file <- function(filename) {
 # (string) data_subset The name of the data subset to load
 # (char vector) activity_labels
 #
-# Returns a dplyr wrapped dataframe (since it uses the load_file function)
+# Returns A dplyr wrapped dataframe (since it uses the load_file function)
 #         with added 'Activity' and 'Subject' columns in the 1 and 2 positions.
 #
 load_data_subset <- function(base_dir, data_subset, activity_labels) {
@@ -91,23 +113,38 @@ load_data <- function(dir) {
     
   print("All data loaded.")
   
-  print("Combining datasets.")
+  print("Combining test and train datasets.")
   bind_rows(train_data, test_data)
 }
 
+# Main function to run this script. Calls the other (sub)functions that are defined
+# in this file. If necessary, it downloads the data and unzips. Then it loads the 
+# train and test datasets, adds the Activity and Subject columns, sets columnnames,
+# and includes names for all activities. It then selects the mean() and std() columns,
+# groups on Activity and Subject, and for each variable (column) calculates the mean
+# per group. The resulting data is written to the file "tidy_run_analysis.txt".
+#
+# Returns null
+#
 run_analysis <- function() {
   # Setup
   data_url <-
     "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
   data_dir <- file.path(getwd(), "UCI HAR Dataset")
   data_zip <- paste(data_dir, ".zip", sep="")
+  tidy_file <- "tidy_run_analysis.txt"
   
   # Download files if not already there
   download_if_needed(data_dir, data_url, data_zip)
   
   # Load data, select, group and summarise using mean() function.
+  # I like the dplyr chain functionality %>% so I make good use of it. :)
+  # For explanation, try ?chain
   load_data(data_dir) %>%
     select(Activity:Subject, contains("mean()"), contains("std()")) %>%
     group_by(Activity, Subject) %>%
-    summarise_each(funs(mean))
+    summarise_each(funs(mean)) %>%
+    write.table(file = tidy_file)
+  
+  print(paste("Selected, grouped and summarised the data.\nAll data is written to", tidy_file))
 }
