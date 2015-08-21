@@ -1,35 +1,36 @@
-####################################################################################
-##                                                                                ##
-##                        Welcome, my excellent friends!                          ##
-##                                                                                ##
-## Here's my take on the RunAnalysis Peer Assignment for the Getting and Cleaning ##
-## Data course on Coursera.                                                       ##
-##                                                                                ##
-## The assignment gave five steps in which to process the data. I tried them, but ##
-## thought they could be made simpler and quicker by using a different order. So  ##
-## I do all the steps, just not in the order that the assignment specified.       ##
-##                                                                                ##
-## What's important to know, is that I tried not to repeat myself in the code,    ##
-## following the Don't Repeat Yourself (DRY) principle. For that, I created some  ##
-## functions in which I placed code that was called repeatedly, like the          ##
-## load_data_subset and load_file functions.                                      ##
-##                                                                                ##
-## I also created the download_if_needed and load_data functions to make the main ##
-## run_analysis function shorter and more readable. All functions are explained   ##
-## in the comments.                                                               ##
-##                                                                                ##
-## To run this script, source it and type run_analysis().                         ##
-## It loads the dplyr library. If you don't have it, install it using             ##
-## install.packages(dplyr). It also loads the downloader package to download      ##
-## data files if they are not present. Install this package with                  ##
-## install.packages(downloader).                                                  ##
-##                                                                                ##
-## The output is written to 'tidy_run_analysis.txt' in the current working        ##
-## directory.                                                                     ##
-##                                                                                ##
-## For more info, see the comments or the README.md and CodeBook.md files.        ##
-##                                                                                ##
-####################################################################################
+#####################################################################################
+##                                                                                 ##
+##                        Welcome, my excellent friends!                           ##
+##                                                                                 ##
+## Here's my take on the RunAnalysis Peer Assignment for the Getting and Cleaning  ##
+## Data course on Coursera.                                                        ##
+##                                                                                 ##
+## The assignment gave five steps in which to process the data. I tried them, but  ##
+## thought they could be made simpler and quicker by using a different order. So   ##
+## I do all the steps, just not in the order that the assignment specified.        ##
+##                                                                                 ##
+## What's important to know, is that I tried not to repeat myself in the code,     ##
+## following the Don't Repeat Yourself (DRY) principle. For that, I created some   ##
+## functions in which I placed code that was called repeatedly, like the           ##
+## load_data_subset and load_file functions.                                       ##
+##                                                                                 ##
+## I also created the download_if_needed and load_data functions to make the main  ##
+## run_analysis function shorter and more readable. The load_tidy_headers function ##
+## is called from load_data function and is also used to make load_data less       ##
+## less cluttered. All functions are explained in the comments.                    ##
+##                                                                                 ##
+## To run this script, source it and type run_analysis().                          ##
+## It loads the dplyr library. If you don't have it, install it using              ##
+## install.packages(dplyr). It also loads the downloader package to download       ##
+## data files if they are not present. Install this package with                   ##
+## install.packages(downloader).                                                   ##
+##                                                                                 ##
+## The output is written to 'tidy_run_analysis.txt' in the current working         ##
+## directory.                                                                      ##
+##                                                                                 ##
+## For more info, see the comments or the README.md and CodeBook.md files.         ##
+##                                                                                 ##
+#####################################################################################
 
 # Load dplyr w/o showing all the startup messages
 suppressPackageStartupMessages(library(dplyr))
@@ -79,7 +80,7 @@ load_file <- function(filename) {
 #
 # (string) base_dir The path to the directory containing all data.
 # (string) data_subset The name of the data subset to load
-# (char vector) activity_labels
+# (character vector) activity_labels
 #
 # Returns A dplyr wrapped dataframe (since it uses the load_file function)
 #         with added 'Activity' and 'Subject' columns in the 1 and 2 positions.
@@ -100,6 +101,28 @@ load_data_subset <- function(base_dir, data_subset, activity_labels) {
   bind_cols(named_activities, subjects, data)
 }
 
+# Load the column header names and 'tidy' them by making them more human
+# readable. The column names are constructed of several components that I 
+# seperate and make more descriptive.
+#
+# (string) filename The path to the file containing the column names.
+#
+# Returns A dplyr wrapped dataframe containing human readable column names.
+load_tidy_headers <- function (filename) {
+  headers <- load_file(filename)[2]
+  headers <- gsub("BodyBody", "Body", t(headers))
+  headers <- gsub("^t", "time-", headers)
+  headers <- gsub("^f", "frequency-", headers)
+  headers <- gsub("Body", "body-", headers)
+  headers <- gsub("Acc", "acceleration-", headers)
+  headers <- gsub("Gyro", "gyroscope-", headers)
+  headers <- gsub("Jerk", "jerk-", headers)
+  headers <- gsub("Mag", "magnitude-", headers)
+  headers <- gsub("Gravity", "gravity-", headers)
+  headers <- gsub("--", "-", headers)
+  headers
+}
+
 # Loads all data from the supplied directory using load_data_subset().
 # 
 # (string) dir The directory containing all data
@@ -109,9 +132,13 @@ load_data_subset <- function(base_dir, data_subset, activity_labels) {
 load_data <- function(dir) {
   print(paste("Loading data from", dir))
   
-  # load other relevant files
-  headers <- load_file(file.path(dir, "features.txt"))[2]
-  col_names <- append(c("Activity", "Subject"), t(headers))
+  # load column headers and make them more readable by (see load_tidy_headers):
+  #  * Replacing variables containing 'BodyBody' by 'Body'.
+  #  * Adding a dash between different variable parts.
+  headers <- load_tidy_headers(file.path(dir, "features.txt"))
+  col_names <- append(c("Activity", "Subject"), headers)
+  
+  # Load activity labels
   activity_labels <- load_file(file.path(dir, "activity_labels.txt"))
   
   # Loading train and test data. Setting column names here is necessary for
@@ -138,7 +165,7 @@ load_data <- function(dir) {
 # groups on Activity and Subject, and for each variable (column) calculates the mean
 # per group. The resulting data is written to the file "tidy_run_analysis.txt".
 #
-# Returns null
+# Returns The final tidy dataset, wrapped in a dplyr object using as.tbl
 #
 run_analysis <- function() {
   
@@ -159,15 +186,18 @@ run_analysis <- function() {
   # then written to 'tidy_run_analysis.txt'.
   # I like the dplyr chain functionality %>% so I make good use of it. :)
   # For explanation, try ?chain
-  d <- load_data(data_dir) %>%
+  result <- load_data(data_dir) %>%
     select(Activity:Subject, contains("mean()"), contains("std()")) %>%
     group_by(Activity, Subject) %>%
-    summarise_each(funs(mean)) %>%
-    write.table(file = tidy_file)
+    summarise_each(funs(mean))
+  
+  write.table(result, file = tidy_file)
   
   print("Selected, grouped and summarised the data.")
   print(paste("Tidy data has been written to '", tidy_file, "'.", sep = ""))
   print("Thank you for your patience.")
+  
+  result
 }
 
 # Uncomment this to make the script run with Rscript or when it is loaded with source().
