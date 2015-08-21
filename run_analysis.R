@@ -1,6 +1,3 @@
-# Load dplyr w/o showing all the startup messages
-suppressPackageStartupMessages(library(dplyr))
-
 ####################################################################################
 ##                                                                                ##
 ##                        Welcome, my excellent friends!                          ##
@@ -33,6 +30,9 @@ suppressPackageStartupMessages(library(dplyr))
 ## For more info, see the comments or the README.md and CodeBook.md files.        ##
 ##                                                                                ##
 ####################################################################################
+
+# Load dplyr w/o showing all the startup messages
+suppressPackageStartupMessages(library(dplyr))
 
 # Download and unzip data if needed. Checks whether the supplied dir and
 # exist. If not, it attempts to download the zipfile from the
@@ -85,7 +85,7 @@ load_file <- function(filename) {
 #         with added 'Activity' and 'Subject' columns in the 1 and 2 positions.
 #
 load_data_subset <- function(base_dir, data_subset, activity_labels) {
-  print(paste("Getting ", data_subset, "ing data.", sep = ""))
+  print(paste("Loading ", data_subset, "ing data.", sep = ""))
   dir <- file.path(base_dir, data_subset)
 
   data <- load_file(file.path(dir, paste("X_", data_subset, ".txt", sep = "")))
@@ -117,7 +117,7 @@ load_data <- function(dir) {
   # Loading train and test data. Setting column names here is necessary for
   # bind_rows to  work correctly (it binds rows by column names). Since the
   # train and test datasets have equally many columns and they mean the same
-  # thing, this is no problem.
+  # thing, this is no problem. Note the use of dplyr's %>% chain functionality.
   train_data <- load_data_subset(dir, "train", activity_labels) %>%
     setNames(col_names)
   test_data <- load_data_subset(dir, "test", activity_labels) %>%
@@ -125,7 +125,7 @@ load_data <- function(dir) {
     
   print("All data loaded.")
   
-  print("Combining test and train datasets and arranging on Activity and Subject.")
+  print("Combining test and train datasets.")
   
   # Use dplyr's bind_rows to combine train and test data.
   bind_rows(train_data, test_data)
@@ -166,8 +166,9 @@ run_analysis <- function() {
     write.table(file = tidy_file)
   
   print("Selected, grouped and summarised the data.")
-  print(paste("All data is written to", tidy_file))
+  print(paste("Tidy data has been written to '", tidy_file, "'.", sep = ""))
+  print("Thank you for your patience.")
 }
 
 # Uncomment this to make the script run with Rscript or when it is loaded with source().
-run_analysis()
+#run_analysis()
