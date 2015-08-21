@@ -191,7 +191,7 @@ run_analysis <- function() {
     group_by(Activity, Subject) %>%
     summarise_each(funs(mean))
   
-  write.table(result, file = tidy_file)
+  write.table(result, file = tidy_file, row.name = FALSE)
   
   print("Selected, grouped and summarised the data.")
   print(paste("Tidy data has been written to '", tidy_file, "'.", sep = ""))
