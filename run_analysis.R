@@ -1,6 +1,10 @@
-library(dplyr)
+# Load dplyr w/o showing all the startup messages
+suppressPackageStartupMessages(library(dplyr))
 
 ####################################################################################
+##                                                                                ##
+##                        Welcome, my excellent friends!                          ##
+##                                                                                ##
 ## Here's my take on the RunAnalysis Peer Assignment for the Getting and Cleaning ##
 ## Data course on Coursera.                                                       ##
 ##                                                                                ##
@@ -28,7 +32,6 @@ library(dplyr)
 ##                                                                                ##
 ## For more info, see the comments or the README.md and CodeBook.md files.        ##
 ##                                                                                ##
-## Cheers, Florian                                                                ##
 ####################################################################################
 
 # Download and unzip data if needed. Checks whether the supplied dir and
@@ -45,11 +48,14 @@ library(dplyr)
 #
 download_if_needed <- function(dir, url, zip) {
   if (!dir.exists(dir)) {
+    print("Data directory not found.")
     if (!file.exists(zip)) {
       # use downloader package for platform-independent https handling
-      library(downloader)
+      print("Downloading data.")
+      suppressPackageStartupMessages(library(downloader))
       download(url, zip)
     }
+    print("Unzipping data zipfile.")
     unzip(zip)
   }
 }
@@ -85,12 +91,16 @@ load_data_subset <- function(base_dir, data_subset, activity_labels) {
   data <- load_file(file.path(dir, paste("X_", data_subset, ".txt", sep = "")))
   subjects <- load_file(file.path(dir, paste("subject_", data_subset, ".txt", sep = "")))
   activities <- load_file(file.path(dir, paste("y_", data_subset, ".txt", sep = "")))
+  
+  # Join the activity numbers and names using dplyr's full_join. The second column
+  # then contains the names in the preserved order.
   named_activities <- full_join(activities, activity_labels, by = "V1")[2]
   
+  # Use dplyr's bind_cols to prepend activities and subjects to the data
   bind_cols(named_activities, subjects, data)
 }
 
-# Loads all data from the supplied directory
+# Loads all data from the supplied directory using load_data_subset().
 # 
 # (string) dir The directory containing all data
 # 
@@ -104,16 +114,20 @@ load_data <- function(dir) {
   col_names <- append(c("Activity", "Subject"), t(headers))
   activity_labels <- load_file(file.path(dir, "activity_labels.txt"))
   
-  # Loading train and test data. Setting column names for bind_rows
+  # Loading train and test data. Setting column names here is necessary for
+  # bind_rows to  work correctly (it binds rows by column names). Since the
+  # train and test datasets have equally many columns and they mean the same
+  # thing, this is no problem.
   train_data <- load_data_subset(dir, "train", activity_labels) %>%
     setNames(col_names)
-    
   test_data <- load_data_subset(dir, "test", activity_labels) %>%
     setNames(col_names)
     
   print("All data loaded.")
   
-  print("Combining test and train datasets.")
+  print("Combining test and train datasets and arranging on Activity and Subject.")
+  
+  # Use dplyr's bind_rows to combine train and test data.
   bind_rows(train_data, test_data)
 }
 
@@ -127,6 +141,7 @@ load_data <- function(dir) {
 # Returns null
 #
 run_analysis <- function() {
+  
   # Setup
   data_url <-
     "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
@@ -134,17 +149,25 @@ run_analysis <- function() {
   data_zip <- paste(data_dir, ".zip", sep="")
   tidy_file <- "tidy_run_analysis.txt"
   
+  # Remove tidy output file if it is present (since we are replacing it)
+  if (file.exists(tidy_file)) file.remove(tidy_file)
+  
   # Download files if not already there
   download_if_needed(data_dir, data_url, data_zip)
   
-  # Load data, select, group and summarise using mean() function.
+  # Load data, select, group and summarise using mean() function. The data is
+  # then written to 'tidy_run_analysis.txt'.
   # I like the dplyr chain functionality %>% so I make good use of it. :)
   # For explanation, try ?chain
-  load_data(data_dir) %>%
+  d <- load_data(data_dir) %>%
     select(Activity:Subject, contains("mean()"), contains("std()")) %>%
     group_by(Activity, Subject) %>%
     summarise_each(funs(mean)) %>%
     write.table(file = tidy_file)
   
-  print(paste("Selected, grouped and summarised the data.\nAll data is written to", tidy_file))
+  print("Selected, grouped and summarised the data.")
+  print(paste("All data is written to", tidy_file))
 }
+
+# Uncomment this to make the script run with Rscript or when it is loaded with source().
+run_analysis()
