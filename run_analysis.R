@@ -1,5 +1,4 @@
 library(dplyr)
-library(downloader)
 
 # You should create one R script called run_analysis.R that does the following:
 # 1. Merges the training and the test sets to create one data set.
@@ -10,116 +9,105 @@ library(downloader)
 # 5. From the data set in step 4, creates a second, independent tidy data set with
 #    the average of each variable for each activity and each subject.
 
-dataset_url <-
-  "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
-dataset_dir <- "UCI HAR Dataset"
-
-# Download and unzip if needed
-if (!dir.exists(dataset_dir)) {
-  dataset_zip <- paste(dataset_dir, ".zip", sep="")
-  if (!file.exists(dataset_zip)) download(dataset_url, dataset_zip)
-  unzip(dataset_zip)
-}
-
-read_table <- function(path) {
-  read.table(path)
-}
-
-get_dplyr_data <- function(subdir, filename) {
-  file.path(dataset_dir, subdir, filename) %>%
-    read_table %>%
-    as.tbl
-}
-
-# load all relevant files
-headers <- get_dplyr_data("", "features.txt")[2]
-col_names <- append(c("Activity", "Subject"), t(headers[2]))
-activity_labels <- get_dplyr_data("", "activity_labels.txt")
-
-train_data <- get_dplyr_data("train", "X_train.txt")
-train_subjects <- get_dplyr_data("train", "subject_train.txt")
-train_acts <- get_dplyr_data("train", "y_train.txt")
-train_all <- bind_cols(train_acts, train_subjects, train_data)
-train_all < -setNames(train_all, col_names)
-
-test_data <- get_dplyr_data("test", "X_test.txt")
-test_subjects <- get_dplyr_data("test", "subject_test.txt")uni
-test_acts <- get_dplyr_data("test", "y_test.txt")
-test_all <- bind_cols(test_acts, test_subjects, test_data)
-test_all <- setNames(test_all, col_names)
-
-dataset <- bind_rows(train_all, test_all)
-df <- dataset %>%
-  group_by()
-  select(Activity:Subject, matches("[mean|std]\(\)")) %>%
-  
-  
-############ Making use of data frames #######################
-
-merge_data <- function (set1, set2) {
-  rbind(set1, set2)
-}
-
-extract_measurements <- function (dataset, ...) {
-  headers <- read.table(file.path(dataset_dir, "features.txt"))
-  #names(dataset) <- headers[,2]
-  dataset[, grep("mean|std", headers[, 2])]
-}
-
-set_activity_names <- function (dataset) {
-  train_labels <- read.table(file.path(train_dir, "y_train.txt"))
-  test_labels <- read.table(file.path(test_dir, "y_test.txt"))
-  alllabels <- rbind(train_labels, test_labels)
-  
-  activities <- read.table(file.path(dataset_dir, "activity_labels.txt"))
-  named_activities = merge(alllabels, activities, by.x = 1, by.y = 1)
-
-  cbind(named_activities[,2], dataset)
-}
-
-label_dataset <- function (dataset) {
-  headers <- read.table(file.path(dataset_dir, "features.txt"))
-  head_ms <- headers[grep("mean|std", headers[, 2]), 2]
-  names(dataset)[2:80] <- head_ms
-  names(dataset)[1] <- "Activity"
-  dataset
-}
-
-tidy_dataset <- function(dataset) {
-  # append subjects
-  train_subjects <- read.table(file.path(train_dir, "subject_train.txt"))
-  test_subjects <- read.table(file.path(test_dir, "subject_test.txt"))
-  
-  allsubjects <- rbind(train_subjects, test_subjects)
-  names(allsubjects) = "Subject"
-  target <- which(names(dataset) == 'Activity')[1]
-  subj_dataset <- cbind(dataset[,1:target, drop=FALSE],
-                        allsubjects,
-                        dataset[, (target+1):ncol(dataset), drop=FALSE]
-                       )
-
-  # average all variables for each activity and each subject
-  #grouped <- group_by(subj_dataset, Activity, Subject)
-  woohoo <- aggregate(subj_dataset[, 3:ncol(subj_dataset)], by = list(subj_dataset$Activity, subj_dataset$Subject), FUN = mean)
-}
-
-df_run_analysis <- function() {
-  # Download and unzip if needed
-  if (!dir.exists(dataset_dir)) {
-    if (!file.exists(dataset_zip)) {
-      require("downloader")
-      download.file(dataset_url, dataset_zip, method = "curl")
+# Download and unzip data if needed. Checks whether the supplied dir and
+# exist. If not, it attempts to download the zipfile from the
+# supplied url. For this, it uses the downloader package. So there's a dependency
+# on this package. If you don't have it, install it by using
+# install.packages('downloader')
+#
+# (string) dir The directory the data should be in.
+# (string) url The url where the data zipfile can be downloaded.
+# (string) zip The name of the zipfile.
+#
+# Returns null
+#
+download_if_needed <- function(dir, url, zip) {
+  if (!dir.exists(dir)) {
+    if (!file.exists(zip)) {
+      # use downloader package for platform-independent https handling
+      library(downloader)
+      download(url, zip)
     }
-    unzip(dataset_zip)
+    unzip(zip)
   }
+}
+
+# Load the given file using read.table
+# I use this function to do all the file loading in one place so I can easily
+# decide to insert print statements or change the way it reads files.
+# 
+# (string) filename: a string with the path to the file that should be read.
+# 
+# Returns a dataframe, wrapped in a dplyr table using dplyr::as.tbl()
+#
+load_file <- function(filename) {
+  #print(paste("loading", filename))
+  as.tbl(read.table(filename))
+}
+
+# Load the dataset from the supplied base_dir, in the data_subset subdirectory.
+# I use this to load the test and train data with two calls to this function.
+# It also sets the activity names as defined in the supplied activity_labels.
+#
+# (string) base_dir The path to the directory containing all data.
+# (string) data_subset The name of the data subset to load
+# (char vector) activity_labels
+#
+# Returns a dplyr wrapped dataframe (since it uses the load_file function)
+#         with added 'Activity' and 'Subject' columns in the 1 and 2 positions.
+#
+load_data_subset <- function(base_dir, data_subset, activity_labels) {
+  print(paste("Getting ", data_subset, "ing data.", sep = ""))
+  dir <- file.path(base_dir, data_subset)
+
+  data <- load_file(file.path(dir, paste("X_", data_subset, ".txt", sep = "")))
+  subjects <- load_file(file.path(dir, paste("subject_", data_subset, ".txt", sep = "")))
+  activities <- load_file(file.path(dir, paste("y_", data_subset, ".txt", sep = "")))
+  named_activities <- full_join(activities, activity_labels, by = "V1")[2]
   
-  train_data <- read.table(file.path(train_dir, "X_train.txt"))
-  test_data <- read.table(file.path(test_dir, "X_test.txt"))
+  bind_cols(named_activities, subjects, data)
+}
+
+# Loads all data from the supplied directory
+# 
+# (string) dir The directory containing all data
+# 
+# Returns A dplyr wrapped dataframe with all column names set and containing data
+#         from both train and test data subsets.
+load_data <- function(dir) {
+  print(paste("Loading data from", dir))
   
-  ## We'll use the %>% operator from dplyr, see ?chain
-  dsm <- merge_data(train_data, test_data)# %>%    #1
-  dse <- extract_measurements(dsm, mean, sd)# %>%  #2
-  dss <- set_activity_names(dse)# %>%              #3
-  dsl <- label_dataset(dss)# %>%                   #4
-  dst <- tidy_dataset(dsl)                         #5
+  # load other relevant files
+  headers <- load_file(file.path(dir, "features.txt"))[2]
+  col_names <- append(c("Activity", "Subject"), t(headers))
+  activity_labels <- load_file(file.path(dir, "activity_labels.txt"))
+  
+  # Loading train and test data. Setting column names for bind_rows
+  train_data <- load_data_subset(dir, "train", activity_labels) %>%
+    setNames(col_names)
+    
+  test_data <- load_data_subset(dir, "test", activity_labels) %>%
+    setNames(col_names)
+    
+  print("All data loaded.")
+  
+  print("Combining datasets.")
+  bind_rows(train_data, test_data)
+}
+
+run_analysis <- function() {
+  # Setup
+  data_url <-
+    "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
+  data_dir <- file.path(getwd(), "UCI HAR Dataset")
+  data_zip <- paste(data_dir, ".zip", sep="")
+  
+  # Download files if not already there
+  download_if_needed(data_dir, data_url, data_zip)
+  
+  # Load data, select, group and summarise using mean() function.
+  load_data(data_dir) %>%
+    select(Activity:Subject, contains("mean()"), contains("std()")) %>%
+    group_by(Activity, Subject) %>%
+    summarise_each(funs(mean))
 }
