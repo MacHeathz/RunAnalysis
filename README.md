@@ -8,7 +8,7 @@ output:
 ---
 
 ## How to use run_analysis.R
-The main script consists of run_analysis.R. You should source it and then run it by calling the function run_analysis(). Alternatively, it is also possible to run the script by uncommenting the last line and running it using Rscript.
+The main script consists of run_analysis.R. You should source it and then run it by calling the function `run_analysis()`. Alternatively, it is also possible to run the script by uncommenting the last line and running it using `Rscript` from the command line.
 
 ## How it works
 The script will start by looking for the data zipfile or directory in the current directory. If it can't be found, it will download and unzip the data. Once the data is downloaded, the script runs the following steps:
@@ -22,7 +22,7 @@ The script will start by looking for the data zipfile or directory in the curren
  6. Selecting the columns containing mean() and std().
  7. Grouping the dataset by Activity and Subject.
  8. Calculating the mean() for each variable, for each group.
- 9. Writing the result to the output file named 'tidy_run_analysis.txt'.
+ 9. Writing the result to the output file named 'tidy_run_analysis.txt', with `row.names = FALSE`.
 
 ## Dependencies
 The script uses the `dplyr` package for tidying the data. Downloading is done using the `downloader` package. You can install either of them by calling `install.packages()`.

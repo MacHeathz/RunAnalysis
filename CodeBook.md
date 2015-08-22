@@ -8,7 +8,7 @@ output:
 ---
 
 ## Project Description
-This is my submission for the Course Project in the Getting and Cleaning Data course on Cousera. The assignment was to write a script plus documentation for tidying a dataset consisting of measurements of phone gyroscope and acceleration sensors while test subjects were conducting several activities.
+This is my submission for the Course Project in the Getting and Cleaning Data course on Cousera. The assignment was to write a script plus documentation (readme and codebook files) for tidying a dataset consisting of measurements of phone gyroscope and acceleration sensors while test subjects were conducting several activities.
 
 ##Study design and data processing
 
@@ -16,23 +16,23 @@ This is my submission for the Course Project in the Getting and Cleaning Data co
 The raw data was collected in a test environment, where 30 human subjects were measured while performing several activities while wearing a Samsung Galaxy S phone on their belt.
 
 ###Notes on the original (raw) data 
-The raw data contains several variables that were aggregates of the raw measurements.
+The raw data contains several variables that were aggregates of the raw measurements. I chose to leave those out of my analysis.
 
 ##Creating the tidy datafile
 
 ###Guide to create the tidy data file
-To create the tidy data file yourself, just source the 'run_analysis.R' script in R and call the 'run_analysis()' function. For convenience, you can also uncomment the last line in the script, which calls the run_analysis function, and invoke 'Rscript run_analysis.R' from the command line. Note that the script will download the data files and begin processing. The final result will be written to 'tidy_run_analysis.txt'.
+To create the tidy data file yourself, just source the `run_analysis.R` script in R and call the `run_analysis()` function. For convenience, you can also uncomment the last line in the script, which calls the run_analysis function, and invoke `Rscript run_analysis.R` from the command line. Note that the script will download the data files and begin processing. The final result will be written to `tidy_run_analysis.txt`.
 
 ###Cleaning of the data
-Several things are done to the data: the train and test datasets are combined, (human readable) column names are added as well as an Activity column (with activity names) and a Subject column. Mean and std columns are selected, and the mean values for each activity and subject combination are determined for each variable. Everything is then written to a 'tidy_run_analysis.txt' file.
+Several things are done to the data: the train and test datasets are combined, (human readable) column names are added as well as an Activity column (with activity names) and a Subject column. Mean and std columns are selected, and the mean values for each activity and subject combination are determined for each variable. Everything is then written to a `tidy_run_analysis.txt` file.
 
 [see also the README document that describes the code in greater detail](README.md)
 
 ###Constraints
-Only columns that use a mean() or std() function are selected. I am aware that there are other columns that contain a meanFreq for example. However, they don't contain values of raw data, they have been processed, and because I only wanted to consider raw data values, I left those out.
+Only columns that use a `mean()` or `std()` function are selected. I am aware that there are other columns that contain a meanFreq for example. However, they don't contain values of raw data, they have been processed, and because I only wanted to consider raw data values, I left those out.
 
 ##Description of the variables in the tiny_run_analysis.txt file
-The final output of the script is a dataset containing 180 observations of 68 variables. The 180 rows is easily deducted, since there were 6 activities and 30 test subjects in total. Since we grouped on Activity and Subject, we arrive at 6x30 = 180 groups for which the mean was calculated on all variables.
+The final output of the script is a dataset containing 180 observations of 68 variables. The 180 rows can easily be checked and found correct. Since there were 6 activities and 30 test subjects in total, and we grouped on Activity and Subject, we arrive at 6x30 = 180 groups for which the mean was calculated on all variables.
 
 Dplyr provides a summary of the tidy dataset:
 ```
@@ -115,7 +115,7 @@ The other variables are all normalized, between -1 and 1. They consist of combin
  * _std()_: Calculated standard deviation.
  * _X_, _Y_, and _Z_: 3-axial components of the sensors, in _X_, _Y_, and _Z_ direction.
 
-In order, the other variables are:
+In order, the other variables are (composed of the components explained above):
  * time-body-acceleration-mean()-X
  * time-body-acceleration-mean()-Y
  * time-body-acceleration-mean()-Z
