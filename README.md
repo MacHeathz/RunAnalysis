@@ -25,7 +25,7 @@ The script will start by looking for the data zipfile or directory in the curren
  9. Writing the result to the output file named 'tidy_run_analysis.txt'.
 
 ## Dependencies
-The script uses the dplyr package for tidying the data. Downloading is done using the downloader package. You can install either of them by calling install.packages().
+The script uses the `dplyr` package for tidying the data. Downloading is done using the `downloader` package. You can install either of them by calling `install.packages()`.
 
 ## Functions
 The script defines the following functions:

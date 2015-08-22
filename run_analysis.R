@@ -70,7 +70,6 @@ download_if_needed <- function(dir, url, zip) {
 # Returns A dataframe, wrapped in a dplyr table using dplyr::as.tbl()
 #
 load_file <- function(filename) {
-  #print(paste("loading", filename))
   as.tbl(read.table(filename))
 }
 
@@ -89,6 +88,7 @@ load_data_subset <- function(base_dir, data_subset, activity_labels) {
   print(paste("Loading ", data_subset, "ing data.", sep = ""))
   dir <- file.path(base_dir, data_subset)
 
+  # Read data plus subjects and activities from files
   data <- load_file(file.path(dir, paste("X_", data_subset, ".txt", sep = "")))
   subjects <- load_file(file.path(dir, paste("subject_", data_subset, ".txt", sep = "")))
   activities <- load_file(file.path(dir, paste("y_", data_subset, ".txt", sep = "")))
@@ -109,10 +109,11 @@ load_data_subset <- function(base_dir, data_subset, activity_labels) {
 #
 # Returns A dplyr wrapped dataframe containing human readable column names.
 load_tidy_headers <- function (filename) {
-  headers <- load_file(filename)[2]
-  headers <- gsub("BodyBody", "Body", t(headers))
+  headers <- load_file(filename)
+  headers <- t(headers[2])
   headers <- gsub("^t", "time-", headers)
   headers <- gsub("^f", "frequency-", headers)
+  headers <- gsub("BodyBody", "body-", headers)
   headers <- gsub("Body", "body-", headers)
   headers <- gsub("Acc", "accelerometer-", headers)
   headers <- gsub("Gyro", "gyroscope-", headers)
@@ -145,16 +146,13 @@ load_data <- function(dir) {
   # bind_rows to  work correctly (it binds rows by column names). Since the
   # train and test datasets have equally many columns and they mean the same
   # thing, this is no problem. Note the use of dplyr's %>% chain functionality.
-  train_data <- load_data_subset(dir, "train", activity_labels) %>%
-    setNames(col_names)
-  test_data <- load_data_subset(dir, "test", activity_labels) %>%
-    setNames(col_names)
+  train_data <- load_data_subset(dir, "train", activity_labels) %>% setNames(col_names)
+  test_data <- load_data_subset(dir, "test", activity_labels) %>% setNames(col_names)
     
   print("All data loaded.")
   
-  print("Combining test and train datasets.")
-  
   # Use dplyr's bind_rows to combine train and test data.
+  print("Combining test and train datasets.")
   bind_rows(train_data, test_data)
 }
 
@@ -168,7 +166,6 @@ load_data <- function(dir) {
 # Returns The final tidy dataset, wrapped in a dplyr object using as.tbl
 #
 run_analysis <- function() {
-  
   # Setup
   data_url <-
     "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
@@ -191,7 +188,7 @@ run_analysis <- function() {
     group_by(Activity, Subject) %>%
     summarise_each(funs(mean))
   
-  write.table(result, file = tidy_file, row.name = FALSE)
+  write.table(result, file = tidy_file, row.names = FALSE)
   
   print("Selected, grouped and summarised the data.")
   print(paste("Tidy data has been written to '", tidy_file, "'.", sep = ""))
