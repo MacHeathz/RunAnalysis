@@ -42,6 +42,8 @@ In creating the tidy data file, the script takes the following steps:
 
 ##Description of the variables in the tiny_run_analysis.txt file
 The final output of the script is a dataset containing 180 observations of 68 variables. The 180 rows is easily deducted, since there were 6 activities and 30 test subjects in total. Since we grouped on Activity and Subject, we arrive at 6x30 = 180 groups for which the mean was calculated on all variables.
+
+Dplyr provides a summary of the tidy dataset:
 ```
 > dataset
 Source: local data frame [180 x 68]
@@ -96,91 +98,96 @@ Variables not shown: time-body-acceleration-mean()-Z (dbl), time-gravity-acceler
 ```
 
 ### Activity
+Activities performed by the test subjects, in plain text.
+They can be of the following values:
+ * LAYING
+ * SITTING
+ * STANDING
+ * WALKING
+ * WALKING_DOWNSTAIRS
+ * WALKING_UPSTAIRS
+
 ### Subject
-### time-body-acceleration-mean()-X
-### time-body-acceleration-mean()-Y
-### time-body-acceleration-mean()-Z
-### time-gravity-acceleration-mean()-X
-### time-gravity-acceleration-mean()-Y
-### time-gravity-acceleration-mean()-Z
-### time-body-acceleration-jerk-mean()-X
-### time-body-acceleration-jerk-mean()-Y
-### time-body-acceleration-jerk-mean()-Z
-### time-body-gyroscope-mean()-X
-### time-body-gyroscope-mean()-Y
-### time-body-gyroscope-mean()-Z
-### time-body-gyroscope-jerk-mean()-X
-### time-body-gyroscope-jerk-mean()-Y
-### time-body-gyroscope-jerk-mean()-Z
-### time-body-acceleration-magnitude-mean()
-### time-gravity-acceleration-magnitude-mean()
-### time-body-acceleration-jerk-magnitude-mean()
-### time-body-gyroscope-magnitude-mean()
-### time-body-gyroscope-jerk-magnitude-mean()
-### frequency-body-acceleration-mean()-X
-### frequency-body-acceleration-mean()-Y
-### frequency-body-acceleration-mean()-Z
-### frequency-body-acceleration-jerk-mean()-X
-### frequency-body-acceleration-jerk-mean()-Y
-### frequency-body-acceleration-jerk-mean()-Z
-### frequency-body-gyroscope-mean()-X
-### frequency-body-gyroscope-mean()-Y
-### frequency-body-gyroscope-mean()-Z
-### frequency-body-acceleration-magnitude-mean()
-### frequency-body-acceleration-jerk-magnitude-mean()
-### frequency-body-gyroscope-magnitude-mean()
-### frequency-body-gyroscope-jerk-magnitude-mean()
-### time-body-acceleration-std()-X
-### time-body-acceleration-std()-Y
-### time-body-acceleration-std()-Z
-### time-gravity-acceleration-std()-X
-### time-gravity-acceleration-std()-Y
-### time-gravity-acceleration-std()-Z
-### time-body-acceleration-jerk-std()-X
-### time-body-acceleration-jerk-std()-Y
-### time-body-acceleration-jerk-std()-Z
-### time-body-gyroscope-std()-X
-### time-body-gyroscope-std()-Y
-### time-body-gyroscope-std()-Z
-### time-body-gyroscope-jerk-std()-X
-### time-body-gyroscope-jerk-std()-Y
-### time-body-gyroscope-jerk-std()-Z
-### time-body-acceleration-magnitude-std()
-### time-gravity-acceleration-magnitude-std()
-### time-body-acceleration-jerk-magnitude-std()
-### time-body-gyroscope-magnitude-std()
-### time-body-gyroscope-jerk-magnitude-std()
-### frequency-body-acceleration-std()-X
-### frequency-body-acceleration-std()-Y
-### frequency-body-acceleration-std()-Z
-### frequency-body-acceleration-jerk-std()-X
-### frequency-body-acceleration-jerk-std()-Y
-### frequency-body-acceleration-jerk-std()-Z
-### frequency-body-gyroscope-std()-X
-### frequency-body-gyroscope-std()-Y
-### frequency-body-gyroscope-std()-Z
-### frequency-body-acceleration-magnitude-std()
-### frequency-body-acceleration-jerk-magnitude-std()
-### frequency-body-gyroscope-magnitude-std()
-### frequency-body-gyroscope-jerk-magnitude-std()
+Numbers indicating the test subjects. There were 30 test subjects in total.
 
-###Variable 1 (repeat this section for all variables in the dataset)
-Short description of what the variable describes.
+### Other
+The other variables are all normalized, between -1 and 1. They consist of combinations of the following components, depending on what they measured and how they were calculated:
+ * _time_: Time domain signals, captured at a constant rate of 50 Hz. Then they were filtered using a median filter and a 3rd order low pass Butterworth filter with a corner frequency of 20 Hz to remove noise.
+ * _frequency_: Frequency domain signals, obtained by applying a Fast Fourier Transform (FFT) to some signals.
+ * _accelerometer_: Accelerometer sensor of the phone.
+ * _gyroscope_: Gyroscope sensor of the phone.
+ * _body_: Body acceleration, calculated from the time domain signals using another low pass Butterworth filter with a corner frequency of 0.3 Hz. 
+ * _gravity_: Gravity acceleration, calculated from the time domain signals using another low pass Butterworth filter with a corner frequency of 0.3 Hz. 
+ * _jerk_: Jerk signals. The body linear acceleration and angular velocity were derived in time to obtain these Jerk signals.
+ * _magnitude_: The magnitude of three-dimensional signals were calculated using the Euclidean norm.
+ * _mean()_: Calculated mean.
+ * _std()_: Calculated standard deviation.
+ * _X_, _Y_, and _Z_: 3-axial components of the sensors, in _X_, _Y_, and _Z_ direction.
 
-Some information on the variable including:
- - Class of the variable
- - Unique values/levels of the variable
- - Unit of measurement (if no unit of measurement list this as well)
- - In case names follow some schema, describe how entries were constructed (for example time-body-gyroscope-z has 4 levels of descriptors. Describe these 4 levels). 
-
-####Notes on variable Activity:
-If available, some additional notes on the variable not covered elsewehere. If no notes are present leave this section out.
-
-####Notes on variable Subject:
-If available, some additional notes on the variable not covered elsewehere. If no notes are present leave this section out.
-
-##Sources
-Sources you used if any, otherise leave out.
-
-##Annex
-If you used any code in the codebook that had the echo=FALSE attribute post this here (make sure you set the results parameter to 'hide' as you do not want the results to show again)
+In order, the other variables are:
+ * time-body-acceleration-mean()-X
+ * time-body-acceleration-mean()-Y
+ * time-body-acceleration-mean()-Z
+ * time-gravity-acceleration-mean()-X
+ * time-gravity-acceleration-mean()-Y
+ * time-gravity-acceleration-mean()-Z
+ * time-body-acceleration-jerk-mean()-X
+ * time-body-acceleration-jerk-mean()-Y
+ * time-body-acceleration-jerk-mean()-Z
+ * time-body-gyroscope-mean()-X
+ * time-body-gyroscope-mean()-Y
+ * time-body-gyroscope-mean()-Z
+ * time-body-gyroscope-jerk-mean()-X
+ * time-body-gyroscope-jerk-mean()-Y
+ * time-body-gyroscope-jerk-mean()-Z
+ * time-body-acceleration-magnitude-mean()
+ * time-gravity-acceleration-magnitude-mean()
+ * time-body-acceleration-jerk-magnitude-mean()
+ * time-body-gyroscope-magnitude-mean()
+ * time-body-gyroscope-jerk-magnitude-mean()
+ * frequency-body-acceleration-mean()-X
+ * frequency-body-acceleration-mean()-Y
+ * frequency-body-acceleration-mean()-Z
+ * frequency-body-acceleration-jerk-mean()-X
+ * frequency-body-acceleration-jerk-mean()-Y
+ * frequency-body-acceleration-jerk-mean()-Z
+ * frequency-body-gyroscope-mean()-X
+ * frequency-body-gyroscope-mean()-Y
+ * frequency-body-gyroscope-mean()-Z
+ * frequency-body-acceleration-magnitude-mean()
+ * frequency-body-acceleration-jerk-magnitude-mean()
+ * frequency-body-gyroscope-magnitude-mean()
+ * frequency-body-gyroscope-jerk-magnitude-mean()
+ * time-body-acceleration-std()-X
+ * time-body-acceleration-std()-Y
+ * time-body-acceleration-std()-Z
+ * time-gravity-acceleration-std()-X
+ * time-gravity-acceleration-std()-Y
+ * time-gravity-acceleration-std()-Z
+ * time-body-acceleration-jerk-std()-X
+ * time-body-acceleration-jerk-std()-Y
+ * time-body-acceleration-jerk-std()-Z
+ * time-body-gyroscope-std()-X
+ * time-body-gyroscope-std()-Y
+ * time-body-gyroscope-std()-Z
+ * time-body-gyroscope-jerk-std()-X
+ * time-body-gyroscope-jerk-std()-Y
+ * time-body-gyroscope-jerk-std()-Z
+ * time-body-acceleration-magnitude-std()
+ * time-gravity-acceleration-magnitude-std()
+ * time-body-acceleration-jerk-magnitude-std()
+ * time-body-gyroscope-magnitude-std()
+ * time-body-gyroscope-jerk-magnitude-std()
+ * frequency-body-acceleration-std()-X
+ * frequency-body-acceleration-std()-Y
+ * frequency-body-acceleration-std()-Z
+ * frequency-body-acceleration-jerk-std()-X
+ * frequency-body-acceleration-jerk-std()-Y
+ * frequency-body-acceleration-jerk-std()-Z
+ * frequency-body-gyroscope-std()-X
+ * frequency-body-gyroscope-std()-Y
+ * frequency-body-gyroscope-std()-Z
+ * frequency-body-acceleration-magnitude-std()
+ * frequency-body-acceleration-jerk-magnitude-std()
+ * frequency-body-gyroscope-magnitude-std()
+ * frequency-body-gyroscope-jerk-magnitude-std()

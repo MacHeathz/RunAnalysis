@@ -114,7 +114,7 @@ load_tidy_headers <- function (filename) {
   headers <- gsub("^t", "time-", headers)
   headers <- gsub("^f", "frequency-", headers)
   headers <- gsub("Body", "body-", headers)
-  headers <- gsub("Acc", "acceleration-", headers)
+  headers <- gsub("Acc", "accelerometer-", headers)
   headers <- gsub("Gyro", "gyroscope-", headers)
   headers <- gsub("Jerk", "jerk-", headers)
   headers <- gsub("Mag", "magnitude-", headers)
