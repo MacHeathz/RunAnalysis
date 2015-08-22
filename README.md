@@ -14,7 +14,7 @@ The main script consists of run_analysis.R. You should source it and then run it
 The script will start by looking for the data zipfile or directory in the current directory. If it can't be found, it will download and unzip the data. Once the data is downloaded, the script runs the following steps:
  1. Load column names and subjects. Column names are made more human readable (more tidy) by:
    * Replacing 'BodyBody' with 'Body'
-   * Adding dashes after 't', 'f', and 'Acc' and 'Body'
+   * Replacing 't', 'f', 'Acc', 'Body', 'Gyro', 'Jerk', 'Mag' and 'Gravity' with longer, more readable forms and separating them using dashes (-).
  2. Load train and test datasets.
  3. Combine the train and test datasets each with activity names and subjects.
  4. Setting column headers on the train and test datasets.
