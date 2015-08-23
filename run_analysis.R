@@ -61,7 +61,8 @@ download_if_needed <- function(dir, url, zip) {
   }
 }
 
-# Load the given file using read.table
+# Load the given file using read.table, and create a dplyr table from it using
+# as.tbl().
 # I use this function to do all the file loading in one place so I can easily
 # decide to insert print statements or change the way it reads files.
 # 
@@ -93,8 +94,8 @@ load_data_subset <- function(base_dir, data_subset, activity_labels) {
   subjects <- load_file(file.path(dir, paste("subject_", data_subset, ".txt", sep = "")))
   activities <- load_file(file.path(dir, paste("y_", data_subset, ".txt", sep = "")))
   
-  # Join the activity numbers and names using dplyr's full_join. The second column
-  # then contains the names in the preserved order.
+  # Join the activity numbers and their names using dplyr's full_join. The second
+  # column then contains the names in the preserved order.
   named_activities <- full_join(activities, activity_labels, by = "V1")[2]
   
   # Use dplyr's bind_cols to prepend activities and subjects to the data
@@ -110,7 +111,11 @@ load_data_subset <- function(base_dir, data_subset, activity_labels) {
 # Returns A dplyr wrapped dataframe containing human readable column names.
 load_tidy_headers <- function (filename) {
   headers <- load_file(filename)
+ 
+  # transpose using t() to turn it from long to wide form.
   headers <- t(headers[2])
+
+  # Use several gsub statements to make variables more readable.
   headers <- gsub("^t", "time-", headers)
   headers <- gsub("^f", "frequency-", headers)
   headers <- gsub("BodyBody", "body-", headers)
@@ -133,9 +138,7 @@ load_tidy_headers <- function (filename) {
 load_data <- function(dir) {
   print(paste("Loading data from", dir))
   
-  # load column headers and make them more readable by (see load_tidy_headers):
-  #  * Replacing variables containing 'BodyBody' by 'Body'.
-  #  * Adding a dash between different variable parts.
+  # load column headers and make them more readable by (see load_tidy_headers)
   headers <- load_tidy_headers(file.path(dir, "features.txt"))
   col_names <- append(c("Activity", "Subject"), headers)
   
@@ -151,7 +154,7 @@ load_data <- function(dir) {
     
   print("All data loaded.")
   
-  # Use dplyr's bind_rows to combine train and test data.
+  # Use dplyr's bind_rows to combine train and test data, and return the result.
   print("Combining test and train datasets.")
   bind_rows(train_data, test_data)
 }
@@ -198,4 +201,4 @@ run_analysis <- function() {
 }
 
 # Uncomment this to make the script run with Rscript or when it is loaded with source().
-#run_analysis()
+run_analysis()
