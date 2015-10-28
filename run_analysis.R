@@ -201,7 +201,7 @@ run_analysis <- function() {
   # I like the dplyr chain functionality %>% so I make good use of it. :)
   # For explanation, try ?chain
   result <- load_data(data_dir) %>%
-    select(Activity:Subject, contains("mean()"), contains("std()")) %>%
+    select(Activity:Subject, matches("[Mm]ean\\(\\)|[Ss]td\\(\\)")) %>%
     group_by(Activity, Subject) %>%
     summarise_each(funs(mean))
   
